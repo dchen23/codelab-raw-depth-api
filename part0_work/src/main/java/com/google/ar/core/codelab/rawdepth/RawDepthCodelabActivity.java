@@ -41,6 +41,7 @@ import com.google.ar.core.codelab.common.helpers.FullScreenHelper;
 import com.google.ar.core.codelab.common.helpers.SnackbarHelper;
 import com.google.ar.core.codelab.common.helpers.TrackingStateHelper;
 import com.google.ar.core.codelab.common.rendering.BackgroundRenderer;
+import com.google.ar.core.codelab.common.rendering.DepthRenderer;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.core.exceptions.UnavailableApkTooOldException;
 import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
@@ -70,6 +71,7 @@ public class RawDepthCodelabActivity extends AppCompatActivity implements GLSurf
   private DisplayRotationHelper displayRotationHelper;
 
   private final BackgroundRenderer backgroundRenderer = new BackgroundRenderer();
+  private final DepthRenderer depthRenderer = new DepthRenderer();
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -205,6 +207,7 @@ public class RawDepthCodelabActivity extends AppCompatActivity implements GLSurf
     try {
       // Create the texture and pass it to ARCore session to be filled during update().
       backgroundRenderer.createOnGlThread(/*context=*/ this);
+      depthRenderer.createOnGlThread(/*context=*/ this);
     } catch (IOException e) {
       Log.e(TAG, "Failed to read an asset file", e);
     }
@@ -256,6 +259,10 @@ public class RawDepthCodelabActivity extends AppCompatActivity implements GLSurf
             this, TrackingStateHelper.getTrackingFailureReasonString(camera));
         return;
       }
+
+      // Visualize depth points.
+      depthRenderer.update(points);
+      depthRenderer.draw(camera);
     } catch (Throwable t) {
       // Avoid crashing the application due to unhandled exceptions.
       Log.e(TAG, "Exception on the OpenGL thread", t);
